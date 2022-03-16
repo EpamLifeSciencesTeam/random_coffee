@@ -1,0 +1,76 @@
+name: 'PR Info Check'
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+    branches:
+      - develop
+      - main
+
+jobs:
+  check-commit-message:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR description
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^(\[WIP\] )?([A-Z]+-\d+) .{10,}$'
+          error: 'Pull Request name must have a meaningful description'
+          flags: 's'
+          excludeDescription: 'true'
+          excludeTitle: 'false'
+          checkAllCommitMessages: 'false'
+      - name: Check Commit Type
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^(feat|fix|docs|style|refactor|test|chore): .*$'
+          error: 'Commit message first line must contain one of the following commit types: feat, fix, docs, style, refactor, test, chore.'
+          flags: 's'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check Commit First Word Capitalization
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^[^:]+: [A-Z].*$'
+          flags: 's'
+          error: 'Commit message must start with a capital letter.'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check Commit First Line End
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^[^\n]+[^.\n](\n.+)*$'
+          flags: 's'
+          error: 'Commit message first line must not end with a period.'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check Commit Multiline Separator
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^[^\n]+(\n(\n[^\n]+)+)?$'
+          error: 'Commit header and body must be separated by one blank line'
+          flags: 'g'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check Commit Line Length
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^[^:]+: [^\n]{0,50}(\n[^\n]{0,72})*$'
+          error: 'The maximum line length of 50 (72) characters is exceeded.'
+          flags: 'g'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
