@@ -42,7 +42,7 @@ lazy val root = (project in file("."))
 lazy val bootstrap = project
   .settings(
     name := "Bootstrap",
-    libraryDependencies ++= akkaHttp :+ akkaActor,
+    libraryDependencies ++= akkaHttp :+ akkaActor :+ pureconfig,
     commonSettings,
     Compile / mainClass := Some("com.epam.random_coffee.RandomCoffeeApp")
   )
@@ -51,7 +51,7 @@ lazy val bootstrap = project
 
 lazy val `auth-service` =
   (project in file("auth-service")).settings(
-    libraryDependencies ++= akkaHttpBase +: (baseTest ++ akkaHttpTest),
+    libraryDependencies ++= akkaHttpJson +: jwtCore +: liquibase +: (akkaHttp ++ circe ++ doobie ++ logging ++ baseTest ++ akkaHttpTest),
     commonSettings
   )
 

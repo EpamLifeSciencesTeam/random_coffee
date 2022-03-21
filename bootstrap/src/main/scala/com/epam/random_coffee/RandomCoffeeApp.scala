@@ -4,23 +4,47 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.epam.random_coffee.authentication.api.AuthenticationAPI
+import com.epam.random_coffee.authentication.AuthenticationApp
+import com.epam.random_coffee.authentication.config.AuthenticationServiceConfig
+import com.epam.random_coffee.config.RandomCoffeeConfig
 import com.epam.random_coffee.events.api.RcEventsAPI
+import pureconfig.ConfigSource
+import pureconfig.error.ConfigReaderException
+
+import scala.util.{ Failure, Success, Try }
 
 object RandomCoffeeApp extends App {
 
   private implicit val system: ActorSystem = ActorSystem("random-coffee")
 
-  private val authRoutes = new AuthenticationAPI
-  private val rcEventsRoutes = new RcEventsAPI
+  private def loadConfig(): Try[RandomCoffeeConfig] =
+    ConfigSource.default.load[RandomCoffeeConfig].left.map(ConfigReaderException[RandomCoffeeConfig](_)).toTry
 
-  private val route = Route.seal(authRoutes.routes ~ rcEventsRoutes.routes)
+  private def loadAuthenticationApi(config: AuthenticationServiceConfig): Try[Route] = {
+    val authenticationApp = new AuthenticationApp(config)
+    authenticationApp.init.flatMap(_ => authenticationApp.api)
+  }
 
-  // todo take values from a config
-  val interface = "localhost"
-  val port = 8088
-  Http().newServerAt("localhost", 8088).bind(route)
-  // todo log instead of println
-  println(s"Server online at http://$interface:$port/")
+  val app =
+    for {
+      config <- loadConfig()
+      authRoutes <- loadAuthenticationApi(config.authentication)
+      rcEventsRoutes = new RcEventsAPI
+    } yield {
+      val route = Route.seal(authRoutes ~ rcEventsRoutes.routes)
+
+      // todo take values from a config
+      val interface = "localhost"
+      val port = 8088
+      Http().newServerAt(interface, port).bind(route)
+      println(s"Server online at http://$interface:$port/")
+    }
+
+  app match {
+    case Failure(exception) =>
+      println(s"Failed to start an app due to exception $exception")
+      system.terminate()
+    case Success(_) =>
+  }
 
 }
