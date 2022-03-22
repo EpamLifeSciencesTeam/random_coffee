@@ -5,9 +5,9 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.wordspec.AnyWordSpec
 
-class AuthenticationAPIImplSpec extends AnyWordSpec with ScalatestRouteTest {
+class AuthenticationAPISpec extends AnyWordSpec with ScalatestRouteTest {
 
-  private val authAPI: AuthenticationAPI = new AuthenticationAPIImpl
+  private val authAPI = new AuthenticationAPI
   private val routes = Route.seal(authAPI.routes)
 
   "AuthenticationAPI" should {

@@ -5,9 +5,9 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.wordspec.AnyWordSpec
 
-class RcEventsAPIImplSpec extends AnyWordSpec with ScalatestRouteTest {
+class RcEventsAPISpec extends AnyWordSpec with ScalatestRouteTest {
 
-  private val authAPI: RcEventsAPI = new RcEventsAPIImpl
+  private val authAPI = new RcEventsAPI
   private val routes = Route.seal(authAPI.routes)
 
   "RcEventsAPI" should {

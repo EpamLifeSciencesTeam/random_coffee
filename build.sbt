@@ -50,29 +50,13 @@ lazy val bootstrap = project
   .dependsOn(`auth-service`, `rc-events-service`)
 
 lazy val `auth-service` =
-  (project in file("auth-service"))
-    .settings(
-      libraryDependencies ++= akkaHttpBase +: (baseTest ++ akkaHttpTest),
-      commonSettings
-    )
-    .dependsOn(`auth-service-api`)
-
-lazy val `auth-service-api` =
-  (project in file("auth-service-api")).settings(
-    libraryDependencies += akkaHttpBase,
+  (project in file("auth-service")).settings(
+    libraryDependencies ++= akkaHttpBase +: (baseTest ++ akkaHttpTest),
     commonSettings
   )
 
 lazy val `rc-events-service` =
-  (project in file("rc-events-service"))
-    .settings(
-      libraryDependencies ++= akkaHttpBase +: (baseTest ++ akkaHttpTest),
-      commonSettings
-    )
-    .dependsOn(`rc-events-service-api`)
-
-lazy val `rc-events-service-api` =
-  (project in file("rc-events-service-api")).settings(
-    libraryDependencies += akkaHttpBase,
+  (project in file("rc-events-service")).settings(
+    libraryDependencies ++= akkaHttpBase +: (baseTest ++ akkaHttpTest),
     commonSettings
   )
