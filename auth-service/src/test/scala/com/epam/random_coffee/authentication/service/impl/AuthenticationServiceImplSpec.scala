@@ -1,12 +1,12 @@
 package com.epam.random_coffee.authentication.service.impl
 
 import com.epam.random_coffee.authentication.config.TokensConfig
-import com.epam.random_coffee.authentication.model.{ AccessTokenContent, Email, Password, User, UserId }
+import com.epam.random_coffee.authentication.json.ModelCodecs.accessTokenContentCodec
+import com.epam.random_coffee.authentication.model._
 import com.epam.random_coffee.authentication.service.{ PasswordEncoder, UserService }
 import io.circe.parser
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.OneInstancePerTest
-import com.epam.random_coffee.authentication.model.JsonCodecs.accessTokenContentCodec
 import org.scalatest.wordspec.AsyncWordSpec
 import pdi.jwt.{ Jwt, JwtAlgorithm }
 

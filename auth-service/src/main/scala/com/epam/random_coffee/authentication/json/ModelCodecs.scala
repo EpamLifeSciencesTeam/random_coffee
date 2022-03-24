@@ -1,9 +1,10 @@
-package com.epam.random_coffee.authentication.model
+package com.epam.random_coffee.authentication.json
 
+import com.epam.random_coffee.authentication.model.{ AccessTokenContent, Email, UserId }
 import io.circe.generic.semiauto.deriveCodec
 import io.circe.{ Codec, Decoder, Encoder }
 
-trait JsonCodecs {
+trait ModelCodecs {
 
   implicit lazy val emailCodec: Codec[Email] =
     Codec.from(Decoder.decodeString.map(Email), Encoder.encodeString.contramap(_.value))
@@ -15,4 +16,4 @@ trait JsonCodecs {
 
 }
 
-object JsonCodecs extends JsonCodecs
+object ModelCodecs extends ModelCodecs

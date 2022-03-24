@@ -1,7 +1,7 @@
 package com.epam.random_coffee.authentication.service.impl
 
 import com.epam.random_coffee.authentication.config.TokensConfig
-import com.epam.random_coffee.authentication.model.JsonCodecs._
+import com.epam.random_coffee.authentication.json.ModelCodecs._
 import com.epam.random_coffee.authentication.model._
 import com.epam.random_coffee.authentication.service.{ AuthenticationService, PasswordEncoder, UserService }
 import io.circe.syntax.EncoderOps
