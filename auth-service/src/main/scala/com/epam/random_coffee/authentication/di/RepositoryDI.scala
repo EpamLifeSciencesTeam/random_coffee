@@ -13,6 +13,10 @@ import scala.concurrent.ExecutionContext
 
 class RepositoryDI(db: DbConfig)(implicit runtime: IORuntime) {
 
+  lazy val userRepository: UserRepository = new UserRepositoryDoobieImpl(transactor)
+
+  lazy val liquibaseMigrator: LiquibaseMigrator = new LiquibaseMigrator(hikariDs.getConnection)
+
   private lazy val hikariDs = {
     val ds = new HikariDataSource()
 
@@ -27,9 +31,5 @@ class RepositoryDI(db: DbConfig)(implicit runtime: IORuntime) {
   private lazy val connectEC = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(32))
 
   private lazy val transactor = Transactor.fromDataSource[IO](hikariDs, connectEC)
-
-  lazy val userRepository: UserRepository = new UserRepositoryDoobieImpl(transactor)
-
-  lazy val liquibaseMigrator: LiquibaseMigrator = new LiquibaseMigrator(hikariDs.getConnection)
 
 }
