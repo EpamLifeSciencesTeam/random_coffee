@@ -1,4 +1,4 @@
-# random_coffee_draft
+# random_coffee
 
 Dependencies:
 - Java 11
@@ -27,19 +27,6 @@ To run the application, use the following command:
 Use the command below to run unit tests:
 ```
     sbt test
-```
-
-### Finding unused dependencies
-To show unused dependencies list, execute the following command:
-```
-sbt unusedCompileDependencies
-```
-
-### Finding undeclared dependencies
-This task executes while building
-To show undeclared dependencies list, execute the following command:
-```
-sbt undeclaredCompileDependencies
 ```
 
 ## Build With
