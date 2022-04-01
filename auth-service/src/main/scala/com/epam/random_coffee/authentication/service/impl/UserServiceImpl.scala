@@ -12,7 +12,7 @@ class UserServiceImpl(repo: UserRepository)(implicit ec: ExecutionContext) exten
   override def create(email: Email, name: String, password: Password): Future[User] =
     for {
       existingUser <- find(email)
-      _ <- if (existingUser.nonEmpty) duplicateUserErr(email) else Future.unit
+      _ <- existingUser.fold(Future.unit)(_ => duplicateUserErr(email))
       id = UserId(UUID.randomUUID().toString)
       user = User(id, email, name, password)
       _ <- save(user)
