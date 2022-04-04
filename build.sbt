@@ -46,6 +46,7 @@ lazy val bootstrap = project
     commonSettings,
     Compile / mainClass := Some("com.epam.random_coffee.RandomCoffeeApp")
   )
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
   .aggregate(`auth-service`, `rc-events-service`)
   .dependsOn(`auth-service`, `rc-events-service`)
 
