@@ -23,6 +23,16 @@ To run the application, use the following command:
     sbt bootstrap/run
 ```
 
+## Running with docker compose
+To run the application in docker, start by building application's docker image with:
+```
+  sbt clean docker:publishLocal 
+```
+After image is created, run:
+```
+docker compose up / docker compose up -d (if you wan't compose to run in detached mode)
+```
+
 ### Running Unit Tests Locally
 Use the command below to run unit tests:
 ```
