@@ -1,11 +1,11 @@
-package com.epam.random_coffee.authentication.di
+package com.epam.random_coffee.events.di
 
 import cats.effect.IO
 import cats.effect.unsafe.IORuntime
-import com.epam.random_coffee.authentication.config.DbConfig
-import com.epam.random_coffee.authentication.repository.impl.UserRepositoryDoobieImpl
-import com.epam.random_coffee.authentication.repository.UserRepository
 import com.epam.random_coffee.database.LiquibaseMigrator
+import com.epam.random_coffee.events.config.DbConfig
+import com.epam.random_coffee.events.repo.impl.EventRepositoryImpl
+import com.epam.random_coffee.events.repo.EventRepository
 import com.zaxxer.hikari.HikariDataSource
 import doobie.Transactor
 
@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext
 
 class RepositoryDI(db: DbConfig)(implicit runtime: IORuntime) {
 
-  lazy val userRepository: UserRepository = new UserRepositoryDoobieImpl(transactor)
+  lazy val eventRepository: EventRepository = new EventRepositoryImpl(transactor)
 
   lazy val liquibaseMigrator: LiquibaseMigrator = new LiquibaseMigrator(hikariDs.getConnection)
 
