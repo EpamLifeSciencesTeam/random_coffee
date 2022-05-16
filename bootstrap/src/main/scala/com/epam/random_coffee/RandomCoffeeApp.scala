@@ -7,7 +7,8 @@ import akka.http.scaladsl.server.Route
 import com.epam.random_coffee.authentication.AuthenticationApp
 import com.epam.random_coffee.authentication.config.AuthenticationServiceConfig
 import com.epam.random_coffee.config.RandomCoffeeConfig
-import com.epam.random_coffee.events.api.RcEventsAPI
+import com.epam.random_coffee.events.EventApp
+import com.epam.random_coffee.events.config.EventServiceConfig
 import pureconfig.ConfigSource
 import pureconfig.error.ConfigReaderException
 
@@ -24,14 +25,18 @@ object RandomCoffeeApp extends App {
     val authenticationApp = new AuthenticationApp(config)
     authenticationApp.init.flatMap(_ => authenticationApp.api)
   }
+  private def loadEventApi(config: EventServiceConfig): Try[Route] = {
+    val eventApp = new EventApp(config)
+    eventApp.init.flatMap(_ => eventApp.api)
+  }
 
   val app =
     for {
       config <- loadConfig()
       authRoutes <- loadAuthenticationApi(config.authentication)
-      rcEventsRoutes = new RcEventsAPI
+      rcEventsRoutes <- loadEventApi(config.eventService)
     } yield {
-      val route = Route.seal(authRoutes ~ rcEventsRoutes.routes)
+      val route = Route.seal(authRoutes ~ rcEventsRoutes)
 
       // todo take values from a config
       val interface = "localhost"

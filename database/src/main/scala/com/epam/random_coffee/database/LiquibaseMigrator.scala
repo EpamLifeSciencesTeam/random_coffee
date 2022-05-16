@@ -1,4 +1,4 @@
-package com.epam.random_coffee.authentication.repository
+package com.epam.random_coffee.database
 
 import com.typesafe.scalalogging.StrictLogging
 import liquibase.database.DatabaseFactory
