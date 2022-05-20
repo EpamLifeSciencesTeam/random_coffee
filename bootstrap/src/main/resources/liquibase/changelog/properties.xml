@@ -11,6 +11,7 @@
     <property name="text.type" value="TEXT" dbms="postgresql"/>
     <property name="boolean.type" value="BOOLEAN" dbms="postgresql"/>
     <property name="timestamp.type" value="TIMESTAMP" dbms="postgresql"/>
+    <property name="timestamp_with_time_zone.type" value="TIMESTAMP with time zone" dbms="postgresql"/>
     <property name="integer.type" value="INTEGER" dbms="postgresql"/>
     <property name="json.type" value="jsonb" dbms="postgresql"/>
 

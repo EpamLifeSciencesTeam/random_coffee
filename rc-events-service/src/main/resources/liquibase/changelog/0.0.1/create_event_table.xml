@@ -10,10 +10,17 @@
         <createTable tableName="event">
             <column name="id" type="${uuid.type}"/>
             <column name="name" type="${64_length_text.type}"/>
+            <column name="description" type="${64_length_text.type}"/>
+            <column name="event_date" type="${timestamp_with_time_zone.type}"/>
+            <column name="creation_date" type="${timestamp_with_time_zone.type}"/>
+            <column name="author" type="${64_length_text.type}"/>
         </createTable>
         <addPrimaryKey constraintName="event_pk" tableName="event" columnNames="id"/>
         <addNotNullConstraint constraintName="event_name_nn" tableName="event" columnName="name"/>
+        <addNotNullConstraint constraintName="event_description_nn" tableName="event" columnName="description"/>
+        <addNotNullConstraint constraintName="event_data_nn" tableName="event" columnName="event_date"/>
+        <addNotNullConstraint constraintName="creation_event_data_nn" tableName="event" columnName="creation_date"/>
+        <addNotNullConstraint constraintName="author_event_nn" tableName="event" columnName="author"/>
     </changeSet>
-
 </databaseChangeLog>
 

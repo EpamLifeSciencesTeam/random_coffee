@@ -20,7 +20,7 @@ class RcEventsAPI(eventService: EventService)(implicit ec: ExecutionContext) ext
     (post & entity(as[CreateEventRequest]))(
       request =>
         complete(
-          eventService.create(request.name).map(event => EventView.fromEvent(event))
+          eventService.create(request.eventName, request.description, request.eventDate, request.author)
         )
     )
 
@@ -28,12 +28,7 @@ class RcEventsAPI(eventService: EventService)(implicit ec: ExecutionContext) ext
     (path(eventIdMatcher) & delete)(id => complete(eventService.delete(id)))
 
   private lazy val getEvent: Route =
-    (path(eventIdMatcher) & get)(
-      id =>
-        rejectEmptyResponse(complete {
-          eventService.get(id).map(eventOpt => eventOpt.map(event => EventView.fromEvent(event)))
-        })
-    )
+    (path(eventIdMatcher) & get)(id => rejectEmptyResponse(complete(eventService.get(id))))
 
   private lazy val updateEvent: Route =
     (path(eventIdMatcher) & put & entity(as[UpdateEventRequest])) { (id, event) =>
@@ -41,5 +36,4 @@ class RcEventsAPI(eventService: EventService)(implicit ec: ExecutionContext) ext
         eventService.update(id, event.name).map(event => EventView.fromEvent(event))
       )
     }
-
 }

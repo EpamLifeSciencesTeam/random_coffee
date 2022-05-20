@@ -4,13 +4,14 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.epam.random_coffee.events.api.request.{ CreateEventRequest, UpdateEventRequest }
-import com.epam.random_coffee.events.model.{ Event, EventId }
+import com.epam.random_coffee.events.model.{ Author, DateForEvent, Event, EventId, RandomCoffeeEvent }
 import com.epam.random_coffee.events.services.EventService
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.OneInstancePerTest
 import org.scalatest.wordspec.AnyWordSpec
 import com.epam.random_coffee.events.api.codecs.EventCodecs._
 
+import java.time.Instant
 import scala.concurrent.Future
 
 class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTest with ScalatestRouteTest {
@@ -19,34 +20,42 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
   private val eventAPI = new RcEventsAPI(eventService)
   private val routes = Route.seal(eventAPI.routes)
   private val id = EventId("uuid_test")
+  private val author = Author("author_Id")
+  private val eventInstant = Instant.parse("2020-01-21T20:00:00Z")
+  private val eventDate = DateForEvent(eventInstant)
+  private val creationDate = DateForEvent(eventInstant.minusSeconds(60))
 
-  private val event = Event(id, "create_event")
+  private val rCEvent =
+    RandomCoffeeEvent(id, "create", "description", eventDate, creationDate, author)
 
   private val updatedEvent = Event(id, "updated_event")
 
-  private val createEventRequest = CreateEventRequest("created_event")
+  private val createEventRequest =
+    CreateEventRequest("create", "description", "2020-01-21T20:00:00Z", "author_Id")
 
   private val updateEventRequest = UpdateEventRequest("updated_event")
 
   "RcEventsAPI" should {
     "return a newly created event" when {
       "user create event" in {
-        (eventService.create _).expects("created_event").returns(Future.successful(event))
+        (eventService.create _)
+          .expects("create", "description", "2020-01-21T20:00:00Z", "author_Id")
+          .returns(Future.successful(rCEvent))
 
         Post("/events/v1", createEventRequest) ~> routes ~> check {
           assert(status == StatusCodes.OK)
-          assert(entityAs[Event] == event)
+          assert(entityAs[RandomCoffeeEvent] == rCEvent)
         }
       }
     }
 
     "find existed event" when {
       "user search event" in {
-        (eventService.get _).expects(id).returns(Future.successful(Some(event)))
+        (eventService.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
         Get("/events/v1/uuid_test") ~> routes ~> check {
           assert(status == StatusCodes.OK)
-          assert(entityAs[Option[Event]].contains(event))
+          assert(entityAs[Option[RandomCoffeeEvent]].contains(rCEvent))
         }
       }
     }

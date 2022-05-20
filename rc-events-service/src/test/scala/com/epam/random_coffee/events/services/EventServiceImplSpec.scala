@@ -1,12 +1,13 @@
 package com.epam.random_coffee.events.services
 
-import com.epam.random_coffee.events.model.{ Event, EventId }
+import com.epam.random_coffee.events.model.{ Author, DateForEvent, Event, EventId, RandomCoffeeEvent }
 import com.epam.random_coffee.events.repo.EventRepository
 import com.epam.random_coffee.events.services.impl.EventServiceImpl
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.OneInstancePerTest
 import org.scalatest.wordspec.AsyncWordSpec
 
+import java.time.Instant
 import scala.concurrent.Future
 
 class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneInstancePerTest {
@@ -15,6 +16,15 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
 
   private val id = EventId("uuid_test")
   private val event = Event(id, "created_event")
+  private val author = Author("author_Id")
+
+  private val stringEventDate = "2020-01-21T20:00:00Z"
+  private val eventInstant = Instant.parse(stringEventDate)
+  private val eventDate = DateForEvent(eventInstant)
+
+  private val creationDate = DateForEvent(eventInstant.plusSeconds(60))
+  private val rCEvent =
+    RandomCoffeeEvent(id, "create", "description", eventDate, creationDate, author)
 
   "EventService" should {
 
@@ -22,13 +32,13 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
       "event doesn't exist" in {
         (repo.save _).expects(*).returns(Future.unit)
 
-        service.create(event.name).map(_ => succeed)
+        service.create(rCEvent.eventName, rCEvent.description, stringEventDate, author.id).map(_ => succeed)
       }
     }
 
     "delete an event" when {
       "event exists" in {
-        (repo.get _).expects(id).returns(Future.successful(Some(event)))
+        (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
         (repo.delete _).expects(*).returns(Future.unit)
 
@@ -38,7 +48,7 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
 
     "update an event" when {
       "event exists" in {
-        (repo.get _).expects(id).returns(Future.successful(Some(event)))
+        (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
         (repo.update _).expects(*, *).returns(Future.unit)
 
@@ -48,9 +58,9 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
 
     "find an event" when {
       "there is an event in repo" in {
-        (repo.get _).expects(id).returns(Future.successful(Some(event)))
+        (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
-        service.get(id).map(testEvent => assert(testEvent.contains(event)))
+        service.get(id).map(testEvent => assert(testEvent.contains(rCEvent)))
       }
     }
 
@@ -89,7 +99,11 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
             Future.failed(new IllegalArgumentException("saving to database has failed"))
           )
 
-        service.create(event.name).failed.map(_.getMessage).map(msg => assert(msg == "saving to database has failed"))
+        service
+          .create(rCEvent.eventName, rCEvent.description, stringEventDate, author.id)
+          .failed
+          .map(_.getMessage)
+          .map(msg => assert(msg == "saving to database has failed"))
 
       }
     }
