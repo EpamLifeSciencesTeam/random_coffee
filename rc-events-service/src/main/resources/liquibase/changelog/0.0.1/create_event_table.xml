@@ -10,7 +10,7 @@
         <createTable tableName="event">
             <column name="id" type="${uuid.type}"/>
             <column name="name" type="${64_length_text.type}"/>
-            <column name="description" type="${64_length_text.type}"/>
+            <column name="description" type="${text.type}"/>
             <column name="event_date" type="${timestamp_with_time_zone.type}"/>
             <column name="creation_date" type="${timestamp_with_time_zone.type}"/>
             <column name="author" type="${64_length_text.type}"/>

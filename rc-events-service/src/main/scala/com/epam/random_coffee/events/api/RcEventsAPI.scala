@@ -4,7 +4,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ PathMatcher, PathMatcher1, Route }
 import com.epam.random_coffee.events.api.codecs.EventCodecs
 import com.epam.random_coffee.events.api.request.{ CreateEventRequest, UpdateEventRequest }
-import com.epam.random_coffee.events.api.response.EventView
+import com.epam.random_coffee.events.api.response.{ EventView, RCEventView }
 import com.epam.random_coffee.events.model.EventId
 import com.epam.random_coffee.events.services.EventService
 
@@ -20,7 +20,9 @@ class RcEventsAPI(eventService: EventService)(implicit ec: ExecutionContext) ext
     (post & entity(as[CreateEventRequest]))(
       request =>
         complete(
-          eventService.create(request.eventName, request.description, request.eventDate, request.author)
+          eventService
+            .create(request.name, request.description, request.eventDate, request.author)
+            .map(rCEvent => RCEventView.fromRCEvent(rCEvent))
         )
     )
 
@@ -28,7 +30,12 @@ class RcEventsAPI(eventService: EventService)(implicit ec: ExecutionContext) ext
     (path(eventIdMatcher) & delete)(id => complete(eventService.delete(id)))
 
   private lazy val getEvent: Route =
-    (path(eventIdMatcher) & get)(id => rejectEmptyResponse(complete(eventService.get(id))))
+    (path(eventIdMatcher) & get)(
+      id =>
+        rejectEmptyResponse(
+          complete(eventService.get(id).map(rCEventOpt => rCEventOpt.map(rCEvent => RCEventView.fromRCEvent(rCEvent))))
+        )
+    )
 
   private lazy val updateEvent: Route =
     (path(eventIdMatcher) & put & entity(as[UpdateEventRequest])) { (id, event) =>

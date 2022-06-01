@@ -1,6 +1,6 @@
 package com.epam.random_coffee.events.services.impl
 
-import com.epam.random_coffee.events.model.{ Author, DateForEvent, Event, EventId, RandomCoffeeEvent }
+import com.epam.random_coffee.events.model.{ Author, DummyEvent, EventId, RandomCoffeeEvent }
 import com.epam.random_coffee.events.repo.EventRepository
 import com.epam.random_coffee.events.services.EventService
 
@@ -14,14 +14,13 @@ class EventServiceImpl(repo: EventRepository)(implicit ec: ExecutionContext) ext
   override def create(
     name: String,
     description: String,
-    eventDate: String,
+    eventDate: Instant,
     author: String
   ): Future[RandomCoffeeEvent] = {
     val id = EventId(UUID.randomUUID().toString)
-    val dateOfEvent = DateForEvent(Instant.parse(eventDate))
-    val creationTime = DateForEvent(Instant.now().truncatedTo(ChronoUnit.MINUTES))
+    val createdAt = Instant.now().truncatedTo(ChronoUnit.MINUTES)
     val authorEvent = Author(author)
-    val rcEvent = RandomCoffeeEvent(id, name, description, dateOfEvent, creationTime, authorEvent)
+    val rcEvent = RandomCoffeeEvent(id, name, description, eventDate, createdAt, authorEvent)
     repo.save(rcEvent).map(_ => rcEvent)
   }
 
@@ -34,12 +33,12 @@ class EventServiceImpl(repo: EventRepository)(implicit ec: ExecutionContext) ext
       _ <- repo.delete(id)
     } yield nothing
 
-  override def update(id: EventId, newEventName: String): Future[Event] =
+  override def update(id: EventId, newEventName: String): Future[DummyEvent] =
     for {
       existingEvent <- repo.get(id)
       _ <- existingEvent.fold(notFoundError(id))(_ => Future.unit)
       _ <- repo.update(id, newEventName)
-      event = Event(id, newEventName)
+      event = DummyEvent(id, newEventName)
     } yield event
 
   private def notFoundError(id: EventId): Future[Unit] =

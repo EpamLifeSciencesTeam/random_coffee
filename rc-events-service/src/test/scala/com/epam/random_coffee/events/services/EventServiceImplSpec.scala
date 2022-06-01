@@ -1,6 +1,6 @@
 package com.epam.random_coffee.events.services
 
-import com.epam.random_coffee.events.model.{ Author, DateForEvent, Event, EventId, RandomCoffeeEvent }
+import com.epam.random_coffee.events.model.{ Author, DummyEvent, EventId, RandomCoffeeEvent }
 import com.epam.random_coffee.events.repo.EventRepository
 import com.epam.random_coffee.events.services.impl.EventServiceImpl
 import org.scalamock.scalatest.AsyncMockFactory
@@ -15,14 +15,12 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
   private val service = new EventServiceImpl(repo)
 
   private val id = EventId("uuid_test")
-  private val event = Event(id, "created_event")
+  private val event = DummyEvent(id, "created_event")
   private val author = Author("author_Id")
 
-  private val stringEventDate = "2020-01-21T20:00:00Z"
-  private val eventInstant = Instant.parse(stringEventDate)
-  private val eventDate = DateForEvent(eventInstant)
+  private val eventDate = Instant.parse("2020-01-21T20:00:00Z")
 
-  private val creationDate = DateForEvent(eventInstant.plusSeconds(60))
+  private val creationDate = eventDate.plusSeconds(60)
   private val rCEvent =
     RandomCoffeeEvent(id, "create", "description", eventDate, creationDate, author)
 
@@ -32,7 +30,7 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
       "event doesn't exist" in {
         (repo.save _).expects(*).returns(Future.unit)
 
-        service.create(rCEvent.eventName, rCEvent.description, stringEventDate, author.id).map(_ => succeed)
+        service.create(rCEvent.name, rCEvent.description, eventDate, author.id).map(_ => succeed)
       }
     }
 
@@ -100,7 +98,7 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
           )
 
         service
-          .create(rCEvent.eventName, rCEvent.description, stringEventDate, author.id)
+          .create(rCEvent.name, rCEvent.description, eventDate, author.id)
           .failed
           .map(_.getMessage)
           .map(msg => assert(msg == "saving to database has failed"))

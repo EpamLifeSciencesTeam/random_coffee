@@ -1,3 +1,5 @@
 package com.epam.random_coffee.events.api.request
 
-case class CreateEventRequest(eventName: String, description: String, eventDate: String, author: String)
+import java.time.Instant
+
+case class CreateEventRequest(name: String, description: String, eventDate: Instant, author: String)

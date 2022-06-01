@@ -4,17 +4,15 @@ import java.time.Instant
 
 final case class EventId(value: String) extends AnyVal
 
-final case class Event(id: EventId, name: String)
+final case class DummyEvent(id: EventId, name: String)
 
 final case class Author(id: String) extends AnyVal
 
-final case class DateForEvent(date: Instant) extends AnyVal
-
 final case class RandomCoffeeEvent(
   id: EventId,
-  eventName: String,
+  name: String,
   description: String,
-  eventDate: DateForEvent,
-  creationDate: DateForEvent,
+  eventDate: Instant,
+  createdAt: Instant,
   author: Author
 )

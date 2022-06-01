@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.epam.random_coffee.events.api.request.{ CreateEventRequest, UpdateEventRequest }
-import com.epam.random_coffee.events.model.{ Author, DateForEvent, Event, EventId, RandomCoffeeEvent }
+import com.epam.random_coffee.events.model.{ Author, DummyEvent, EventId, RandomCoffeeEvent }
 import com.epam.random_coffee.events.services.EventService
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.OneInstancePerTest
@@ -21,17 +21,16 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
   private val routes = Route.seal(eventAPI.routes)
   private val id = EventId("uuid_test")
   private val author = Author("author_Id")
-  private val eventInstant = Instant.parse("2020-01-21T20:00:00Z")
-  private val eventDate = DateForEvent(eventInstant)
-  private val creationDate = DateForEvent(eventInstant.minusSeconds(60))
+  private val eventDate = Instant.parse("2020-01-21T20:00:00Z")
+  private val creationDate = eventDate.minusSeconds(60)
 
   private val rCEvent =
     RandomCoffeeEvent(id, "create", "description", eventDate, creationDate, author)
 
-  private val updatedEvent = Event(id, "updated_event")
+  private val updatedEvent = DummyEvent(id, "updated_event")
 
   private val createEventRequest =
-    CreateEventRequest("create", "description", "2020-01-21T20:00:00Z", "author_Id")
+    CreateEventRequest("create", "description", eventDate, "author_Id")
 
   private val updateEventRequest = UpdateEventRequest("updated_event")
 
@@ -39,7 +38,7 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
     "return a newly created event" when {
       "user create event" in {
         (eventService.create _)
-          .expects("create", "description", "2020-01-21T20:00:00Z", "author_Id")
+          .expects("create", "description", eventDate, "author_Id")
           .returns(Future.successful(rCEvent))
 
         Post("/events/v1", createEventRequest) ~> routes ~> check {
@@ -76,7 +75,7 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
 
         Put("/events/v1/uuid_test", updateEventRequest) ~> routes ~> check {
           assert(status == StatusCodes.OK)
-          assert(entityAs[Event] == updatedEvent)
+          assert(entityAs[DummyEvent] == updatedEvent)
         }
       }
     }
