@@ -1,6 +1,6 @@
 package com.epam.random_coffee.events.services
 
-import com.epam.random_coffee.events.model.{ Author, DummyEvent, EventId, RandomCoffeeEvent }
+import com.epam.random_coffee.events.model.{ EventId, RandomCoffeeEvent, UserId }
 import com.epam.random_coffee.events.repo.EventRepository
 import com.epam.random_coffee.events.services.impl.EventServiceImpl
 import org.scalamock.scalatest.AsyncMockFactory
@@ -15,8 +15,7 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
   private val service = new EventServiceImpl(repo)
 
   private val id = EventId("uuid_test")
-  private val event = DummyEvent(id, "created_event")
-  private val author = Author("author_Id")
+  private val author = UserId("author_Id")
 
   private val eventDate = Instant.parse("2020-01-21T20:00:00Z")
 
@@ -48,9 +47,9 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
       "event exists" in {
         (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
-        (repo.update _).expects(*, *).returns(Future.unit)
+        (repo.update _).expects(*, *, *, *).returns(Future.unit)
 
-        service.update(id, event.name).map(_ => succeed)
+        service.update(id, Some(rCEvent.name), Some(rCEvent.description), Some(rCEvent.eventDate)).map(_ => succeed)
       }
     }
 
@@ -81,7 +80,7 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
         (repo.get _).expects(id).returns(Future.successful(None))
 
         service
-          .update(id, event.name)
+          .update(id, Some(rCEvent.name), Some(rCEvent.description), Some(rCEvent.eventDate))
           .failed
           .map(_.getMessage)
           .map(msg => assert(msg == s"Event with id ${id.value} doesn't exist"))

@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.epam.random_coffee.events.api.request.{ CreateEventRequest, UpdateEventRequest }
-import com.epam.random_coffee.events.model.{ Author, DummyEvent, EventId, RandomCoffeeEvent }
+import com.epam.random_coffee.events.model.{ EventId, RandomCoffeeEvent, UserId }
 import com.epam.random_coffee.events.services.EventService
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.OneInstancePerTest
@@ -20,41 +20,44 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
   private val eventAPI = new RcEventsAPI(eventService)
   private val routes = Route.seal(eventAPI.routes)
   private val id = EventId("uuid_test")
-  private val author = Author("author_Id")
+  private val author = UserId("author_Id")
   private val eventDate = Instant.parse("2020-01-21T20:00:00Z")
   private val creationDate = eventDate.minusSeconds(60)
+  private val updatedEventDate = eventDate.plusSeconds(120)
 
-  private val rCEvent =
+  private val event =
     RandomCoffeeEvent(id, "create", "description", eventDate, creationDate, author)
 
-  private val updatedEvent = DummyEvent(id, "updated_event")
+  private val updatedEvent =
+    RandomCoffeeEvent(id, "new name", "new description", updatedEventDate, creationDate, author)
 
   private val createEventRequest =
     CreateEventRequest("create", "description", eventDate, "author_Id")
 
-  private val updateEventRequest = UpdateEventRequest("updated_event")
+  private val updateEventRequest =
+    UpdateEventRequest(Some("new name"), Some("new description"), Some(updatedEventDate))
 
   "RcEventsAPI" should {
     "return a newly created event" when {
       "user create event" in {
         (eventService.create _)
           .expects("create", "description", eventDate, "author_Id")
-          .returns(Future.successful(rCEvent))
+          .returns(Future.successful(event))
 
         Post("/events/v1", createEventRequest) ~> routes ~> check {
           assert(status == StatusCodes.OK)
-          assert(entityAs[RandomCoffeeEvent] == rCEvent)
+          assert(entityAs[RandomCoffeeEvent] == event)
         }
       }
     }
 
     "find existed event" when {
       "user search event" in {
-        (eventService.get _).expects(id).returns(Future.successful(Some(rCEvent)))
+        (eventService.get _).expects(id).returns(Future.successful(Some(event)))
 
         Get("/events/v1/uuid_test") ~> routes ~> check {
           assert(status == StatusCodes.OK)
-          assert(entityAs[Option[RandomCoffeeEvent]].contains(rCEvent))
+          assert(entityAs[Option[RandomCoffeeEvent]].contains(event))
         }
       }
     }
@@ -71,11 +74,13 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
 
     "update existed event" when {
       "user update event" in {
-        (eventService.update _).expects(id, updateEventRequest.name).returns(Future.successful(updatedEvent))
+        (eventService.update _)
+          .expects(id, updateEventRequest.name, updateEventRequest.description, updateEventRequest.eventDate)
+          .returns(Future.successful(updatedEvent))
 
         Put("/events/v1/uuid_test", updateEventRequest) ~> routes ~> check {
           assert(status == StatusCodes.OK)
-          assert(entityAs[DummyEvent] == updatedEvent)
+          assert(entityAs[RandomCoffeeEvent] == updatedEvent)
         }
       }
     }
@@ -91,7 +96,7 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
       }
 
       "user's attempt to update a non-existent event" in {
-        (eventService.update _).expects(*, *).returns(Future.failed(new RuntimeException))
+        (eventService.update _).expects(*, *, *, *).returns(Future.failed(new RuntimeException))
 
         Put("/events/v1/uuid_test", updateEventRequest) ~> routes ~> check {
           assert(status == StatusCodes.InternalServerError)

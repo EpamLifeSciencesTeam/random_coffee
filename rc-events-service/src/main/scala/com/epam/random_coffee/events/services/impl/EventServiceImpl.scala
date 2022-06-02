@@ -1,6 +1,6 @@
 package com.epam.random_coffee.events.services.impl
 
-import com.epam.random_coffee.events.model.{ Author, DummyEvent, EventId, RandomCoffeeEvent }
+import com.epam.random_coffee.events.model.{ EventId, RandomCoffeeEvent, UserId }
 import com.epam.random_coffee.events.repo.EventRepository
 import com.epam.random_coffee.events.services.EventService
 
@@ -19,7 +19,7 @@ class EventServiceImpl(repo: EventRepository)(implicit ec: ExecutionContext) ext
   ): Future[RandomCoffeeEvent] = {
     val id = EventId(UUID.randomUUID().toString)
     val createdAt = Instant.now().truncatedTo(ChronoUnit.MINUTES)
-    val authorEvent = Author(author)
+    val authorEvent = UserId(author)
     val rcEvent = RandomCoffeeEvent(id, name, description, eventDate, createdAt, authorEvent)
     repo.save(rcEvent).map(_ => rcEvent)
   }
@@ -29,18 +29,33 @@ class EventServiceImpl(repo: EventRepository)(implicit ec: ExecutionContext) ext
   override def delete(id: EventId): Future[Unit] =
     for {
       existingEvent <- repo.get(id)
-      nothing <- existingEvent.fold(notFoundError(id))(_ => Future.unit)
-      _ <- repo.delete(id)
+      _ <- existingEvent.fold(notFoundError(id))(Future.successful)
+      nothing <- repo.delete(id)
     } yield nothing
 
-  override def update(id: EventId, newEventName: String): Future[DummyEvent] =
+  override def update(
+    id: EventId,
+    newName: Option[String],
+    newDescription: Option[String],
+    newEventDate: Option[Instant]
+  ): Future[RandomCoffeeEvent] =
     for {
       existingEvent <- repo.get(id)
-      _ <- existingEvent.fold(notFoundError(id))(_ => Future.unit)
-      _ <- repo.update(id, newEventName)
-      event = DummyEvent(id, newEventName)
-    } yield event
+      initialEvent <- existingEvent.fold(notFoundError(id))(Future.successful)
+      name = newName.getOrElse(initialEvent.name)
+      description = newDescription.getOrElse(initialEvent.description)
+      dateOfEvent = newEventDate.getOrElse(initialEvent.eventDate)
+      _ <- repo.update(id, name, description, dateOfEvent)
+      updatedEvent = RandomCoffeeEvent(
+        id,
+        name,
+        description,
+        dateOfEvent,
+        initialEvent.createdAt,
+        initialEvent.author
+      )
+    } yield updatedEvent
 
-  private def notFoundError(id: EventId): Future[Unit] =
+  private def notFoundError(id: EventId): Future[RandomCoffeeEvent] =
     Future.failed(new IllegalArgumentException(s"Event with id ${id.value} doesn't exist"))
 }

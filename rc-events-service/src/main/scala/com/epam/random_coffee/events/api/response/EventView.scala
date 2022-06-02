@@ -1,24 +1,19 @@
 package com.epam.random_coffee.events.api.response
 
-import com.epam.random_coffee.events.model.{ Author, DummyEvent, EventId, RandomCoffeeEvent }
+import com.epam.random_coffee.events.model.{ EventId, RandomCoffeeEvent, UserId }
 
 import java.time.Instant
 
-case class EventView(id: EventId, name: String)
-
-case class RCEventView(
+case class EventView(
   id: EventId,
   name: String,
   description: String,
   eventDate: Instant,
   createdAt: Instant,
-  author: Author
+  author: UserId
 )
 
 object EventView {
-  def fromEvent(event: DummyEvent): EventView = EventView(event.id, event.name)
-}
-object RCEventView {
-  def fromRCEvent(rCEvent: RandomCoffeeEvent): RCEventView =
-    RCEventView(rCEvent.id, rCEvent.name, rCEvent.description, rCEvent.eventDate, rCEvent.createdAt, rCEvent.author)
+  def fromEvent(event: RandomCoffeeEvent): EventView =
+    EventView(event.id, event.name, event.description, event.eventDate, event.createdAt, event.author)
 }
