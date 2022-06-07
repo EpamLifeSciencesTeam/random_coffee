@@ -15,12 +15,11 @@ class EventServiceImpl(repo: EventRepository)(implicit ec: ExecutionContext) ext
     name: String,
     description: String,
     eventDate: Instant,
-    author: String
+    author: UserId
   ): Future[RandomCoffeeEvent] = {
     val id = EventId(UUID.randomUUID().toString)
-    val createdAt = Instant.now().truncatedTo(ChronoUnit.MINUTES)
-    val authorEvent = UserId(author)
-    val rcEvent = RandomCoffeeEvent(id, name, description, eventDate, createdAt, authorEvent)
+    val createdAt = Instant.now().truncatedTo(ChronoUnit.SECONDS)
+    val rcEvent = RandomCoffeeEvent(id, name, description, eventDate, createdAt, author)
     repo.save(rcEvent).map(_ => rcEvent)
   }
 
@@ -45,7 +44,6 @@ class EventServiceImpl(repo: EventRepository)(implicit ec: ExecutionContext) ext
       name = newName.getOrElse(initialEvent.name)
       description = newDescription.getOrElse(initialEvent.description)
       dateOfEvent = newEventDate.getOrElse(initialEvent.eventDate)
-      _ <- repo.update(id, name, description, dateOfEvent)
       updatedEvent = RandomCoffeeEvent(
         id,
         name,
@@ -54,6 +52,7 @@ class EventServiceImpl(repo: EventRepository)(implicit ec: ExecutionContext) ext
         initialEvent.createdAt,
         initialEvent.author
       )
+      _ <- repo.update(updatedEvent)
     } yield updatedEvent
 
   private def notFoundError(id: EventId): Future[RandomCoffeeEvent] =

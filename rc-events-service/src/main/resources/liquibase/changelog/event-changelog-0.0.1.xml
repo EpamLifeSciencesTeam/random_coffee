@@ -5,5 +5,6 @@
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <include file="0.0.1/create_event_table.xml" relativeToChangelogFile="true"/>
+    <include file="0.0.1/add_description,dates,author_for_event_table.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

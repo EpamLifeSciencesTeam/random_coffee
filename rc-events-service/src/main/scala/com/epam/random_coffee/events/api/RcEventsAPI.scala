@@ -32,9 +32,9 @@ class RcEventsAPI(eventService: EventService)(implicit ec: ExecutionContext) ext
   private lazy val getEvent: Route =
     (path(eventIdMatcher) & get)(
       id =>
-        rejectEmptyResponse(
-          complete(eventService.get(id).map(rCEventOpt => rCEventOpt.map(rCEvent => EventView.fromEvent(rCEvent))))
-        )
+        rejectEmptyResponse(complete {
+          eventService.get(id).map(eventOpt => eventOpt.map(event => EventView.fromEvent(event)))
+        })
     )
 
   private lazy val updateEvent: Route =

@@ -9,11 +9,10 @@ case class EventView(
   name: String,
   description: String,
   eventDate: Instant,
-  createdAt: Instant,
   author: UserId
 )
 
 object EventView {
   def fromEvent(event: RandomCoffeeEvent): EventView =
-    EventView(event.id, event.name, event.description, event.eventDate, event.createdAt, event.author)
+    EventView(event.id, event.name, event.description, event.eventDate, event.author)
 }

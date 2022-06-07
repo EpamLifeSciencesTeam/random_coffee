@@ -29,7 +29,7 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
       "event doesn't exist" in {
         (repo.save _).expects(*).returns(Future.unit)
 
-        service.create(rCEvent.name, rCEvent.description, eventDate, author.id).map(_ => succeed)
+        service.create(rCEvent.name, rCEvent.description, eventDate, author).map(_ => succeed)
       }
     }
 
@@ -44,12 +44,42 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
     }
 
     "update an event" when {
-      "event exists" in {
+      "event exists and request contains all fields" in {
         (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
-        (repo.update _).expects(*, *, *, *).returns(Future.unit)
+        (repo.update _).expects(*).returns(Future.unit)
 
         service.update(id, Some(rCEvent.name), Some(rCEvent.description), Some(rCEvent.eventDate)).map(_ => succeed)
+      }
+
+      "request contains only the name" in {
+        (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
+
+        (repo.update _).expects(*).returns(Future.unit)
+
+        service.update(id, Some(rCEvent.name), None, None).map(_ => succeed)
+      }
+      "request contains only a description" in {
+        (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
+
+        (repo.update _).expects(*).returns(Future.unit)
+
+        service.update(id, None, Some(rCEvent.description), None).map(_ => succeed)
+      }
+      "request contains only the date of the event" in {
+        (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
+
+        (repo.update _).expects(*).returns(Future.unit)
+
+        service.update(id, None, None, Some(rCEvent.eventDate)).map(_ => succeed)
+      }
+
+      "request contains nothing" in {
+        (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
+
+        (repo.update _).expects(*).returns(Future.unit)
+
+        service.update(id, None, None, None).map(_ => succeed)
       }
     }
 
@@ -97,7 +127,7 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
           )
 
         service
-          .create(rCEvent.name, rCEvent.description, eventDate, author.id)
+          .create(rCEvent.name, rCEvent.description, eventDate, author)
           .failed
           .map(_.getMessage)
           .map(msg => assert(msg == "saving to database has failed"))

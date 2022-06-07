@@ -1,6 +1,6 @@
 package com.epam.random_coffee.events.services
 
-import com.epam.random_coffee.events.model.{ EventId, RandomCoffeeEvent }
+import com.epam.random_coffee.events.model.{ EventId, RandomCoffeeEvent, UserId }
 
 import java.time.Instant
 import scala.concurrent.Future
@@ -11,7 +11,7 @@ trait EventService {
     name: String,
     description: String,
     eventDate: Instant,
-    author: String
+    author: UserId
   ): Future[RandomCoffeeEvent]
 
   def get(id: EventId): Future[Option[RandomCoffeeEvent]]
