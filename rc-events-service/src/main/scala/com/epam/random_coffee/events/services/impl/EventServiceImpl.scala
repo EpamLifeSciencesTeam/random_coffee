@@ -27,7 +27,7 @@ class EventServiceImpl(repo: EventRepository)(implicit ec: ExecutionContext) ext
 
   override def delete(id: EventId): Future[Unit] =
     for {
-      existingEvent <- repo.get(id)
+      existingEvent <- get(id)
       _ <- existingEvent.fold(notFoundError(id))(Future.successful)
       nothing <- repo.delete(id)
     } yield nothing
@@ -39,7 +39,7 @@ class EventServiceImpl(repo: EventRepository)(implicit ec: ExecutionContext) ext
     newEventDate: Option[Instant]
   ): Future[RandomCoffeeEvent] =
     for {
-      existingEvent <- repo.get(id)
+      existingEvent <- get(id)
       initialEvent <- existingEvent.fold(notFoundError(id))(Future.successful)
       name = newName.getOrElse(initialEvent.name)
       description = newDescription.getOrElse(initialEvent.description)

@@ -27,7 +27,8 @@ class EventRepositoryImpl(transactor: Transactor[IO])(implicit runtime: IORuntim
   override def update(updatedEvent: RandomCoffeeEvent): Future[Unit] =
     unsafeRun {
       sql"""update event set name = ${updatedEvent.name}, description = ${updatedEvent.description},
-           event_date = ${updatedEvent.eventDate} where id = ${updatedEvent.id}""".update.run.map(_ => ())
+           event_date = ${updatedEvent.eventDate}, create_at = ${updatedEvent.createdAt}, 
+           author = ${updatedEvent.author} where id = ${updatedEvent.id}""".update.run.map(_ => ())
     }
 
   override def delete(id: EventId): Future[Unit] = unsafeRun {

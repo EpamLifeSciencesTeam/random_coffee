@@ -20,8 +20,25 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
   private val eventDate = Instant.parse("2020-01-21T20:00:00Z")
 
   private val creationDate = eventDate.plusSeconds(60)
+
   private val rCEvent =
     RandomCoffeeEvent(id, "create", "description", eventDate, creationDate, author)
+
+  private val updatedName = "updatedName"
+  private val updatedDescription = "updatedDescription"
+  private val updatedEventDate = eventDate.plusSeconds(360)
+
+  private val rCEventWithNewName =
+    rCEvent.copy(name = updatedName)
+
+  private val rCEventWithNewDescription =
+    rCEvent.copy(description = updatedDescription)
+
+  private val rCEventWithNewEventDate =
+    rCEvent.copy(eventDate = updatedEventDate)
+
+  private val rCEventFullyUpdated =
+    rCEvent.copy(name = updatedName, description = updatedDescription, eventDate = updatedEventDate)
 
   "EventService" should {
 
@@ -47,39 +64,43 @@ class EventServiceImplSpec extends AsyncWordSpec with AsyncMockFactory with OneI
       "event exists and request contains all fields" in {
         (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
-        (repo.update _).expects(*).returns(Future.unit)
+        (repo.update _).expects(rCEventFullyUpdated).returns(Future.unit)
 
-        service.update(id, Some(rCEvent.name), Some(rCEvent.description), Some(rCEvent.eventDate)).map(_ => succeed)
+        service
+          .update(id, Some(updatedName), Some(updatedDescription), Some(updatedEventDate))
+          .map(event => assert(event == rCEventFullyUpdated))
       }
 
       "request contains only the name" in {
         (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
-        (repo.update _).expects(*).returns(Future.unit)
+        (repo.update _).expects(rCEventWithNewName).returns(Future.unit)
 
-        service.update(id, Some(rCEvent.name), None, None).map(_ => succeed)
+        service.update(id, Some(updatedName), None, None).map(event => assert(event == rCEventWithNewName))
       }
       "request contains only a description" in {
         (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
-        (repo.update _).expects(*).returns(Future.unit)
+        (repo.update _).expects(rCEventWithNewDescription).returns(Future.unit)
 
-        service.update(id, None, Some(rCEvent.description), None).map(_ => succeed)
+        service
+          .update(id, None, Some(updatedDescription), None)
+          .map(event => assert(event == rCEventWithNewDescription))
       }
       "request contains only the date of the event" in {
         (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
-        (repo.update _).expects(*).returns(Future.unit)
+        (repo.update _).expects(rCEventWithNewEventDate).returns(Future.unit)
 
-        service.update(id, None, None, Some(rCEvent.eventDate)).map(_ => succeed)
+        service.update(id, None, None, Some(updatedEventDate)).map(event => assert(event == rCEventWithNewEventDate))
       }
 
       "request contains nothing" in {
         (repo.get _).expects(id).returns(Future.successful(Some(rCEvent)))
 
-        (repo.update _).expects(*).returns(Future.unit)
+        (repo.update _).expects(rCEvent).returns(Future.unit)
 
-        service.update(id, None, None, None).map(_ => succeed)
+        service.update(id, None, None, None).map(event => assert(event == rCEvent))
       }
     }
 
