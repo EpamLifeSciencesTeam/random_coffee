@@ -4,13 +4,15 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.epam.random_coffee.events.api.request.{ CreateEventRequest, UpdateEventRequest }
-import com.epam.random_coffee.events.model.{ Event, EventId }
+import com.epam.random_coffee.events.model.{ EventId, RandomCoffeeEvent, UserId }
 import com.epam.random_coffee.events.services.EventService
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.OneInstancePerTest
 import org.scalatest.wordspec.AnyWordSpec
 import com.epam.random_coffee.events.api.codecs.EventCodecs._
+import com.epam.random_coffee.events.api.response.EventView
 
+import java.time.Instant
 import scala.concurrent.Future
 
 class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTest with ScalatestRouteTest {
@@ -19,23 +21,37 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
   private val eventAPI = new RcEventsAPI(eventService)
   private val routes = Route.seal(eventAPI.routes)
   private val id = EventId("uuid_test")
+  private val author = UserId("author_Id")
+  private val eventDate = Instant.parse("2020-01-21T20:00:00Z")
+  private val creationDate = eventDate.minusSeconds(60)
+  private val updatedEventDate = eventDate.plusSeconds(120)
 
-  private val event = Event(id, "create_event")
+  private val event =
+    RandomCoffeeEvent(id, "create", "description", eventDate, creationDate, author)
 
-  private val updatedEvent = Event(id, "updated_event")
+  private val updatedEvent =
+    RandomCoffeeEvent(id, "new name", "new description", updatedEventDate, creationDate, author)
 
-  private val createEventRequest = CreateEventRequest("created_event")
+  private val createEventRequest =
+    CreateEventRequest("create", "description", eventDate, author)
 
-  private val updateEventRequest = UpdateEventRequest("updated_event")
+  private val createEventView =
+    EventView(id, "create", "description", eventDate, author)
+
+  private val updateEventRequest =
+    UpdateEventRequest(Some("new name"), Some("new description"), Some(updatedEventDate))
+
+  private val updateEventView =
+    EventView(id, "new name", "new description", updatedEventDate, author)
 
   "RcEventsAPI" should {
     "return a newly created event" when {
       "user create event" in {
-        (eventService.create _).expects("created_event").returns(Future.successful(event))
+        (eventService.create _).expects("create", "description", eventDate, author).returns(Future.successful(event))
 
         Post("/events/v1", createEventRequest) ~> routes ~> check {
           assert(status == StatusCodes.OK)
-          assert(entityAs[Event] == event)
+          assert(entityAs[EventView] == createEventView)
         }
       }
     }
@@ -46,7 +62,7 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
 
         Get("/events/v1/uuid_test") ~> routes ~> check {
           assert(status == StatusCodes.OK)
-          assert(entityAs[Option[Event]].contains(event))
+          assert(entityAs[Option[EventView]].contains(createEventView))
         }
       }
     }
@@ -63,11 +79,13 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
 
     "update existed event" when {
       "user update event" in {
-        (eventService.update _).expects(id, updateEventRequest.name).returns(Future.successful(updatedEvent))
+        (eventService.update _)
+          .expects(id, updateEventRequest.name, updateEventRequest.description, updateEventRequest.eventDate)
+          .returns(Future.successful(updatedEvent))
 
         Put("/events/v1/uuid_test", updateEventRequest) ~> routes ~> check {
           assert(status == StatusCodes.OK)
-          assert(entityAs[Event] == updatedEvent)
+          assert(entityAs[EventView] == updateEventView)
         }
       }
     }
@@ -83,7 +101,7 @@ class RcEventsAPISpec extends AnyWordSpec with MockFactory with OneInstancePerTe
       }
 
       "user's attempt to update a non-existent event" in {
-        (eventService.update _).expects(*, *).returns(Future.failed(new RuntimeException))
+        (eventService.update _).expects(*, *, *, *).returns(Future.failed(new RuntimeException))
 
         Put("/events/v1/uuid_test", updateEventRequest) ~> routes ~> check {
           assert(status == StatusCodes.InternalServerError)

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <include file="../properties.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="add_columns_for_event_table" author="nikita_patokov">
+        <addColumn tableName="event">
+            <column name="description" type="${text.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_date" type="${timestamp_with_time_zone.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_at" type="${timestamp_with_time_zone.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author" type="${64_length_text.type}">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="event" columnName="description"/>
+            <dropColumn tableName="event" columnName="event_date"/>
+            <dropColumn tableName="event" columnName="create_at"/>
+            <dropColumn tableName="event" columnName="author"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
+
